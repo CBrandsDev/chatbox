@@ -8,6 +8,7 @@ public class ChatClient {
     private BufferedReader stdIn;
     private Socket socket;
     private String clientId;
+    private String userName;
 
     public ChatClient(String serverAddress, int port) throws IOException {
         socket = new Socket(serverAddress, port);
@@ -15,6 +16,8 @@ public class ChatClient {
         out = new PrintWriter(socket.getOutputStream(), true);
         stdIn = new BufferedReader(new InputStreamReader(System.in));
         clientId = UUID.randomUUID().toString();
+        System.out.print("Digite seu nome: ");
+        userName = stdIn.readLine();
     }
 
     private void start() {
@@ -23,7 +26,7 @@ public class ChatClient {
         String userInput;
         try {
             while ((userInput = stdIn.readLine()) != null) {
-                out.println(clientId + ": " + userInput);
+                out.println(clientId + ":" + userName + ": " + userInput);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -35,8 +38,13 @@ public class ChatClient {
             String message;
             try {
                 while ((message = in.readLine()) != null) {
-                    if (!message.startsWith(clientId)) {
-                        System.out.println("Received: " + message.substring(message.indexOf(":") + 2));
+                    // Extrai o clientId da mensagem recebida
+                    String receivedClientId = message.substring(0, message.indexOf(":"));
+                    
+                    // Verifica se o clientId recebido é diferente do clientId deste cliente
+                    if (!receivedClientId.equals(clientId)) {
+                        // Exibe a mensagem sem o clientId
+                        System.out.println("Mensagem de " + message.substring(message.indexOf(":") + 1));
                     }
                 }
             } catch (IOException e) {
@@ -47,7 +55,7 @@ public class ChatClient {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.out.println("Usage: java ChatClient <server address> <port number>");
+            System.out.println("Uso: java ChatClient <endereço do servidor> <número da porta>");
             return;
         }
 
