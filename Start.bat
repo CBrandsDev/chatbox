@@ -1,6 +1,9 @@
 @echo off
-set /p port="Enter the port number to start the server on: "
-echo Starting Chat Server on port %port%...
-javac ChatServer.java
-java ChatServer %port%
+set startPort=8000
+set endPort=8005
+
+for /L %%i in (%startPort%,1,%endPort%) do (
+    echo Starting Chat Server on port %%i...
+    start "Chat Server on port %%i" java ChatServer %%i
+)
 pause
