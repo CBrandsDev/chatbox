@@ -12,6 +12,7 @@ public class ChatClientGUI extends JFrame {
     private JTextArea chatArea;
     private JButton connectButton;
     private ChatClient client;
+    private JTextField messageField; // Added this line to declare the messageField variable
 
     public ChatClientGUI() {
         createUI();
@@ -73,6 +74,13 @@ public class ChatClientGUI extends JFrame {
             JOptionPane.showMessageDialog(null, "Erro ao fechar a conexão: " + e.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    public void sendMessage(String message) {
+        if (writer != null) {
+            // Inclui o nome do usuário na mensagem
+            writer.println(userName + ": " + message);
+        }
+    }
     }
 
     private void createUI() {
@@ -81,21 +89,29 @@ public class ChatClientGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JPanel inputPanel = new JPanel(new GridLayout(2, 2));
+        // Panel for user inputs
+        JPanel inputPanel = new JPanel(new GridLayout(3, 2));
         userNameField = new JTextField();
         portField = new JTextField();
-        chatArea = new JTextArea();
         connectButton = new JButton("Connect");
 
         inputPanel.add(new JLabel("User Name:"));
         inputPanel.add(userNameField);
         inputPanel.add(new JLabel("Port:"));
         inputPanel.add(portField);
+        inputPanel.add(new JLabel()); // Placeholder for grid alignment
+        inputPanel.add(connectButton);
 
+        // Adding components to the frame
         add(inputPanel, BorderLayout.NORTH);
+        chatArea = new JTextArea();
         add(new JScrollPane(chatArea), BorderLayout.CENTER);
-        add(connectButton, BorderLayout.SOUTH);
 
+        // Message field at the bottom
+        messageField = new JTextField();
+        add(messageField, BorderLayout.SOUTH);
+
+        // Connect button action
         connectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -103,6 +119,13 @@ public class ChatClientGUI extends JFrame {
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Erro ao conectar ao servidor: " + ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
                 }
+            }
+        });
+
+        // Message field action
+        messageField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sendMessage();
             }
         });
 
@@ -114,6 +137,14 @@ public class ChatClientGUI extends JFrame {
         int port = Integer.parseInt(portField.getText());
         client = new ChatClient("localhost", port, userName, chatArea);
         client.start();
+    }
+
+    private void sendMessage() {
+        String message = messageField.getText();
+        if (!message.isEmpty()) {
+            client.sendMessage(message);
+            messageField.setText(""); // Clear the input field after sending
+        }
     }
 
     public static void main(String[] args) {
