@@ -1,18 +1,22 @@
 import java.io.*;
 import java.net.*;
-import java.util.UUID;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class ChatClientGUI extends JFrame {
     private JTextField userNameField;
     private JTextField portField;
-    private JTextArea chatArea;
+    private JTextPane chatArea;
+    private StyledDocument chatDocument;
     private JButton connectButton;
     private ChatClient client;
-    private JTextField messageField; // Added this line to declare the messageField variable
+    private JTextField messageField;
 
     public ChatClientGUI() {
         createUI();
@@ -21,12 +25,12 @@ public class ChatClientGUI extends JFrame {
     private String serverAddress;
     private int serverPort;
     private String userName;
-    private JTextArea chatOutputArea;
+    private JTextPane chatOutputArea;
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
 
-    public ChatClient(String serverAddress, int serverPort, String userName, JTextArea chatOutputArea) {
+    public ChatClient(String serverAddress, int serverPort, String userName, JTextPane chatOutputArea) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.userName = userName;
@@ -47,7 +51,26 @@ public class ChatClientGUI extends JFrame {
                 try {
                     String serverMessage;
                     while ((serverMessage = reader.readLine()) != null) {
-                        chatOutputArea.append(serverMessage + "\n");
+                        final String finalServerMessage = serverMessage; // Defina como final
+                        SwingUtilities.invokeLater(() -> {
+                            try {
+                                int colonIndex = finalServerMessage.indexOf(":");
+                                String user = finalServerMessage.substring(0, colonIndex);
+                                String message = finalServerMessage.substring(colonIndex + 2);
+
+                                Style style;
+                                if (user.equals(userName)) {
+                                    style = chatDocument.getStyle("UserStyle");
+                                } else {
+                                    style = chatDocument.getStyle("OtherUserStyle");
+                                }
+
+                                chatDocument.insertString(chatDocument.getLength(), user + ": ", style);
+                                chatDocument.insertString(chatDocument.getLength(), message + "\n", null);
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                        });
                     }
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(null, "Erro ao ler do servidor: " + e.getMessage(), "Erro de Leitura", JOptionPane.ERROR_MESSAGE);
@@ -104,7 +127,9 @@ public class ChatClientGUI extends JFrame {
 
         // Adding components to the frame
         add(inputPanel, BorderLayout.NORTH);
-        chatArea = new JTextArea();
+        chatArea = new JTextPane();
+        chatArea.setEditable(false);
+        chatDocument = chatArea.getStyledDocument();
         add(new JScrollPane(chatArea), BorderLayout.CENTER);
 
         // Message field at the bottom
@@ -129,14 +154,30 @@ public class ChatClientGUI extends JFrame {
             }
         });
 
+        createStyles();
+
         setVisible(true);
     }
 
+    private void createStyles() {
+        Style style = chatArea.addStyle("UserStyle", null);
+        StyleConstants.setForeground(style, Color.BLUE);
+
+        style = chatArea.addStyle("OtherUserStyle", null);
+        StyleConstants.setForeground(style, Color.RED);
+    }
+
     private void connectToServer() throws IOException {
-        String userName = userNameField.getText();
-        int port = Integer.parseInt(portField.getText());
-        client = new ChatClient("localhost", port, userName, chatArea);
-        client.start();
+        if (client == null || client.socket.isClosed()) { // Verifica se o cliente já está conectado ou não
+            String userName = userNameField.getText();
+            int port = Integer.parseInt(portField.getText());
+            client = new ChatClient("localhost", port, userName, chatArea);
+            client.start();
+            connectButton.setEnabled(false); // Desabilita o botão após a conexão
+            JOptionPane.showMessageDialog(this, "Conexão bem-sucedida!", "Conexão", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Você já está conectado!", "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void sendMessage() {
@@ -150,5 +191,4 @@ public class ChatClientGUI extends JFrame {
     public static void main(String[] args) {
         new ChatClientGUI();
     }
-}
-
+};
