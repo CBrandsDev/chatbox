@@ -49,7 +49,7 @@ public class ChatClientGUI extends JFrame {
                 try {
                     String serverMessage;
                     while ((serverMessage = reader.readLine()) != null) {
-                        final String finalServerMessage = serverMessage; // Defina como final
+                        final String finalServerMessage = serverMessage;
                         SwingUtilities.invokeLater(() -> {
                             try {
                                 int colonIndex = finalServerMessage.indexOf(":");
@@ -159,7 +159,7 @@ public class ChatClientGUI extends JFrame {
         try {
             if (client == null || client.socket.isClosed()) {
                 String userName = userNameField.getText();
-                client = new ChatClient("localhost", port, userName, chatArea);
+                client = new ChatClient("192.168.10.9", port, userName, chatArea);
                 client.start();
                 JOptionPane.showMessageDialog(this, "Conectado à sala na porta: " + port, "Conexão", JOptionPane.INFORMATION_MESSAGE);
             } else {
