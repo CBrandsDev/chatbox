@@ -11,10 +11,8 @@ import javax.swing.text.StyledDocument;
 
 public class ChatClientGUI extends JFrame {
     private JTextField userNameField;
-    private JTextField portField;
     private JTextPane chatArea;
     private StyledDocument chatDocument;
-    private JButton connectButton;
     private ChatClient client;
     private JTextField messageField;
 
@@ -107,76 +105,68 @@ public class ChatClientGUI extends JFrame {
     }
 
     private void createUI() {
-        setTitle("Chat Client");
+        setTitle("ChatBox 0.2.0");
         setSize(400, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Panel for user inputs
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2));
+        // Panel for user inputs and room buttons
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         userNameField = new JTextField();
-        portField = new JTextField();
-        connectButton = new JButton("Connect");
-
-        inputPanel.add(new JLabel("User Name:"));
+        inputPanel.add(new JLabel("Usuário:"));
         inputPanel.add(userNameField);
-        inputPanel.add(new JLabel("Port:"));
-        inputPanel.add(portField);
-        inputPanel.add(new JLabel()); // Placeholder for grid alignment
-        inputPanel.add(connectButton);
 
-        // Adding components to the frame
+        // Panel for room buttons
+        JPanel roomPanel = new JPanel(new GridLayout(1, 5));
+        String[] roomNames = {"Geral", "Pendencias", "Adm", "Vendas", "Peças/Estoque", "Recepção/Expresso"};
+        int[] ports = {8000, 8001, 8002, 8003, 8004, 8005}; // Exemplo de portas para cada sala
+
+        for (int i = 0; i < roomNames.length; i++) {
+            JButton roomButton = new JButton(roomNames[i]);
+            int port = ports[i];
+            roomButton.addActionListener(e -> connectToRoom(port));
+            roomPanel.add(roomButton);
+        }
+        inputPanel.add(roomPanel);
+
         add(inputPanel, BorderLayout.NORTH);
+
         chatArea = new JTextPane();
         chatArea.setEditable(false);
         chatDocument = chatArea.getStyledDocument();
         add(new JScrollPane(chatArea), BorderLayout.CENTER);
 
-        // Message field at the bottom
+        // Message input field
         messageField = new JTextField();
-        add(messageField, BorderLayout.SOUTH);
+        messageField.addActionListener(e -> sendMessage());
+        add(messageField, BorderLayout.SOUTH); // Adiciona o campo de mensagem na parte inferior
 
-        // Connect button action
-        connectButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    connectToServer();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Erro ao conectar ao servidor: " + ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        // Message field action
-        messageField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                sendMessage();
-            }
-        });
-
-        createStyles();
+        createStyles(); // Assegura que os estilos são criados
 
         setVisible(true);
     }
 
     private void createStyles() {
-        Style style = chatArea.addStyle("UserStyle", null);
-        StyleConstants.setForeground(style, Color.BLUE);
+        Style userStyle = chatArea.addStyle("UserStyle", null);
+        StyleConstants.setForeground(userStyle, Color.BLUE);
 
-        style = chatArea.addStyle("OtherUserStyle", null);
-        StyleConstants.setForeground(style, Color.RED);
+        Style otherUserStyle = chatArea.addStyle("OtherUserStyle", null);
+        StyleConstants.setForeground(otherUserStyle, Color.RED);
     }
 
-    private void connectToServer() throws IOException {
-        if (client == null || client.socket.isClosed()) { // Verifica se o cliente já está conectado ou não
-            String userName = userNameField.getText();
-            int port = Integer.parseInt(portField.getText());
-            client = new ChatClient("localhost", port, userName, chatArea);
-            client.start();
-            connectButton.setEnabled(false); // Desabilita o botão após a conexão
-            JOptionPane.showMessageDialog(this, "Conexão bem-sucedida!", "Conexão", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Você já está conectado!", "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+    private void connectToRoom(int port) {
+        try {
+            if (client == null || client.socket.isClosed()) {
+                String userName = userNameField.getText();
+                client = new ChatClient("localhost", port, userName, chatArea);
+                client.start();
+                JOptionPane.showMessageDialog(this, "Conectado à sala na porta: " + port, "Conexão", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Você já está conectado em uma sala!", "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao conectar ao servidor: " + ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
         }
     }
 
