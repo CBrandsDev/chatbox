@@ -15,6 +15,7 @@ public class ChatClientGUI extends JFrame {
     private StyledDocument chatDocument;
     private ChatClient client;
     private JTextField messageField;
+    private JButton disconnectButton;
 
     public ChatClientGUI() {
         createUI();
@@ -27,6 +28,11 @@ public class ChatClientGUI extends JFrame {
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
+    private volatile boolean running = true; // Flag para controlar a execução da thread de escuta
+
+    public void stop() {
+        running = false; // Método para parar a thread
+    }
 
     public ChatClient(String serverAddress, int serverPort, String userName, JTextPane chatOutputArea) {
         this.serverAddress = serverAddress;
@@ -48,6 +54,7 @@ public class ChatClientGUI extends JFrame {
             public void run() {
                 try {
                     String serverMessage;
+                    while (running && (serverMessage = reader.readLine()) != null) {
                     while ((serverMessage = reader.readLine()) != null) {
                         final String finalServerMessage = serverMessage;
                         SwingUtilities.invokeLater(() -> {
@@ -70,8 +77,10 @@ public class ChatClientGUI extends JFrame {
                             }
                         });
                     }
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(null, "Erro ao ler do servidor: " + e.getMessage(), "Erro de Leitura", JOptionPane.ERROR_MESSAGE);
+                }} catch (IOException e) {
+                    if (running) { // Só mostra o erro se a thread não foi intencionalmente parada
+                        JOptionPane.showMessageDialog(null, "Erro ao ler do servidor: " + e.getMessage(), "Erro de Leitura", JOptionPane.ERROR_MESSAGE);
+                    }
                 } finally {
                     closeConnection();
                 }
@@ -82,6 +91,9 @@ public class ChatClientGUI extends JFrame {
 
     private void closeConnection() {
         try {
+            if (writer != null) {
+                writer.flush(); // Assegura que todos os dados pendentes sejam enviados antes de fechar
+            }
             if (reader != null) {
                 reader.close();
             }
@@ -91,15 +103,28 @@ public class ChatClientGUI extends JFrame {
             if (socket != null) {
                 socket.close();
             }
+            SwingUtilities.invokeLater(() -> {
+                ChatClientGUI.this.updateChatArea("Desconectado.", "SystemMessageStyle");
+            });
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Erro ao fechar a conexão: " + e.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    public void sendMessage(String message) {
-        if (writer != null) {
-            // Inclui o nome do usuário na mensagem
-            writer.println(userName + ": " + message);
+    public void sendMessage(String message, boolean isSystemMessage) {
+        if (socket != null && socket.isConnected()) {
+            try {
+                OutputStream out = socket.getOutputStream();
+                if (isSystemMessage) {
+                    out.write((message + "\n").getBytes()); // Envia mensagem de sistema sem prefixo de usuário
+                    out.flush(); // Força o envio imediato
+                } else {
+                    PrintWriter writer = new PrintWriter(out, true);
+                    writer.println(userName + ": " + message); // Envia mensagem normal com prefixo de usuário
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     }
@@ -119,7 +144,7 @@ public class ChatClientGUI extends JFrame {
 
         // Panel for room buttons
         JPanel roomPanel = new JPanel(new GridLayout(1, 5));
-        String[] roomNames = {"Geral", "Pendencias", "Adm", "Vendas", "Peças/Estoque", "Recepção/Expresso"};
+        String[] roomNames = {"Geral", "Pendencias", "Adm", "Vendas", "Peças/Estoque", "Recepço/Expresso"};
         int[] ports = {8000, 8001, 8002, 8003, 8004, 8005}; // Exemplo de portas para cada sala
 
         for (int i = 0; i < roomNames.length; i++) {
@@ -129,6 +154,10 @@ public class ChatClientGUI extends JFrame {
             roomPanel.add(roomButton);
         }
         inputPanel.add(roomPanel);
+
+        disconnectButton = new JButton("Desconectar");
+        disconnectButton.addActionListener(e -> disconnectFromRoom());
+        inputPanel.add(disconnectButton);
 
         add(inputPanel, BorderLayout.NORTH);
 
@@ -170,11 +199,42 @@ public class ChatClientGUI extends JFrame {
         }
     }
 
+    private void disconnectFromRoom() {
+        if (client != null && client.socket != null && !client.socket.isClosed()) {
+            new Thread(() -> {
+                try {
+                    client.sendMessage("DISCONNECT", true); // Envia uma mensagem de desconexão
+                    client.stop(); // Para a thread de escuta
+                    client.closeConnection(); // Fecha a conexão
+                    client = null; // Limpa o cliente
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this, "Desconectado com sucesso.", "Desconexão", JOptionPane.INFORMATION_MESSAGE);
+                    });
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(null, "Erro ao desconectar: " + ex.getMessage(), "Erro de Desconexão", JOptionPane.ERROR_MESSAGE);
+                    });
+                }
+            }).start();
+        } else {
+            JOptionPane.showMessageDialog(this, "Não está conectado a nenhuma sala.", "Erro de Desconexão", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private void sendMessage() {
         String message = messageField.getText();
         if (!message.isEmpty()) {
-            client.sendMessage(message);
+            client.sendMessage(message, false);
             messageField.setText(""); // Clear the input field after sending
+        }
+    }
+
+    public void updateChatArea(String message, String styleName) {
+        Style style = chatDocument.getStyle(styleName);
+        try {
+            chatDocument.insertString(chatDocument.getLength(), message + "\n", style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
         }
     }
 
