@@ -155,6 +155,7 @@ public class ChatClientGUI extends JFrame {
         }
         inputPanel.add(roomPanel);
 
+// little changes in here
         disconnectButton = new JButton("Desconectar");
         disconnectButton.addActionListener(e -> disconnectFromRoom());
         inputPanel.add(disconnectButton);
