@@ -9,6 +9,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+// only commit
+
 public class ChatClientGUI extends JFrame {
     private JTextField userNameField;
     private JTextPane chatArea;
@@ -155,7 +157,7 @@ public class ChatClientGUI extends JFrame {
         }
         inputPanel.add(roomPanel);
 
-// little changes in here
+    // little changes in here
         disconnectButton = new JButton("Desconectar");
         disconnectButton.addActionListener(e -> disconnectFromRoom());
         inputPanel.add(disconnectButton);
