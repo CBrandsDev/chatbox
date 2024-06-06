@@ -9,7 +9,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-// only commit
 
 public class ChatClientGUI extends JFrame {
     private JTextField userNameField;
