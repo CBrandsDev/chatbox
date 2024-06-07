@@ -10,6 +10,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 
+// QUE BOSTA EU N TO TENDO TEMPO DE ESTUDAR AAAAAA QUE COISA
+
 public class ChatClientGUI extends JFrame {
     private JTextField userNameField;
     private JTextPane chatArea;
