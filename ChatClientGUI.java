@@ -63,7 +63,6 @@ public class ChatClientGUI extends JFrame {
                                 int colonIndex = finalServerMessage.indexOf(":");
                                 String user = finalServerMessage.substring(0, colonIndex);
                                 String message = finalServerMessage.substring(colonIndex + 2);
-
                                 Style style;
                                 if (user.equals(userName)) {
                                     style = chatDocument.getStyle("UserStyle");
