@@ -169,9 +169,13 @@ public class ChatClientGUI extends JFrame {
         add(new JScrollPane(chatArea), BorderLayout.CENTER);
 
         // Message input field
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BorderLayout());
         messageField = new JTextField();
         messageField.addActionListener(e -> sendMessage());
-        add(messageField, BorderLayout.SOUTH); // Adiciona o campo de mensagem na parte inferior
+        messagePanel.add(messageField, BorderLayout.CENTER);
+        messagePanel.add(disconnectButton, BorderLayout.SOUTH);
+        add(messagePanel, BorderLayout.SOUTH);
 
         createStyles(); // Assegura que os estilos são criados
 
