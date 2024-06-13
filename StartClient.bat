@@ -1,5 +1,5 @@
 @echo off
 echo Starting Chat Client...
-javac ChatClientGUI.java
-java ChatClientGUI
+start /B javac ChatClientGUI.java
+start /B java ChatClientGUI
 pause

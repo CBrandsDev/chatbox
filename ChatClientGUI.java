@@ -140,12 +140,12 @@ public class ChatClientGUI extends JFrame {
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         userNameField = new JTextField();
         inputPanel.add(new JLabel("Usuário:"));
-        inputPanel.add(userNameField);
+        inputPanel.add(userNameField, BorderLayout.CENTER);
 
         // Panel for room buttons
         JPanel roomPanel = new JPanel(new GridLayout(1, 5));
-        String[] roomNames = {"Geral", "Pendencias", "Adm", "Vendas", "Peças/Estoque", "Recepço/Expresso"};
-        int[] ports = {8000, 8001, 8002, 8003, 8004, 8005}; // Exemplo de portas para cada sala
+        String[] roomNames = {"Geral", "Pendencias"};
+        int[] ports = {8000, 8001}; 
 
         for (int i = 0; i < roomNames.length; i++) {
             JButton roomButton = new JButton(roomNames[i]);

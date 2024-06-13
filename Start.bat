@@ -1,6 +1,6 @@
 @echo off
 set startPort=8000
-set endPort=8005
+set endPort=8001
 
 for /L %%i in (%startPort%,1,%endPort%) do (
     echo Starting Chat Server on port %%i...
