@@ -1,15 +1,11 @@
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;  
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-
-// only commit, so sad
 
 
 public class ChatClientGUI extends JFrame {
