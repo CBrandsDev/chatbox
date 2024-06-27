@@ -7,9 +7,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-// aaaaaaaaaa
-// aaaaaaaaaa
-// aaaaaaaaaa
+
 
 
 public class ChatClientGUI extends JFrame {
