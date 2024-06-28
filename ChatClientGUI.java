@@ -7,6 +7,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+// estoy tristito por que eu nao consigo tirar um tempinho pra codar aaaa
 
 
 
