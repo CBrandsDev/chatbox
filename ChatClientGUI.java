@@ -7,12 +7,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-// estoy tristito por que eu nao consigo tirar um tempinho pra codar aaaa
-// estou com muita preguiça de codar pqp, aaaaa, eu tenho que dar um jeito nisso
-// estou com muita preguiça de codar pqp, aaaaa, eu tenho que dar um jeito nisso
-// estou com muita preguiça de codar pqp, aaaaa, eu tenho que dar um jeito nisso
-// estou com muita preguiça de codar pqp, aaaaa, eu tenho que dar um jeito nisso
-
 
 
 public class ChatClientGUI extends JFrame {
